@@ -163,7 +163,7 @@ Interpret the coefficient for `lstat` in plain English. Remember to include "hol
 
 #### Answer:
 
--   
+-   lstat: lower status of the population (percent)
 
 ### Question 4
 
@@ -227,7 +227,7 @@ Choose one predictor from your model and interpret its coefficient in plain Engl
 
 #### Answer:
 
-(write your answer here)
+-   For every one unit increase in age, the median home value decreases by \$7760.
 
 ### Question 8
 
@@ -235,7 +235,7 @@ What is the R² for your model? What does this tell you?
 
 #### Answer:
 
-(write your answer here)
+-   0.2267. This tells us the model can explain roughly 23% of variance found.
 
 # A note about "accuracy"
 
