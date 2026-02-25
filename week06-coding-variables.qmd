@@ -151,7 +151,7 @@ Summarize these findings. What is your reference group, and how do the other gro
 
 (Grace)
 
-1.  What comparisons are made with this coding scheme? How does this coding scheme affect the coefficients in regression models? (What do the coefficients represnt? What is the reference level?)
+1.  What comparisons are made with this coding scheme? How does this coding scheme affect the coefficients in regression models? (What do the coefficients represent? What is the reference level?)
 
     1.  Deviation coding is used in regression analysis to compare the mean of a specific category (level) to the average of all group means (grand mean). It essentially compares how the group mean deviates from the overall mean.
 
@@ -284,4 +284,26 @@ You can use the below to define a reference level, or you can assign new values 
 
 ```{r}
 hsb2$race.f <- relevel(hsb2$race.f, ref = "Asian")
+```
+
+Testing deviation coding vs. reading scores
+
+```{r}
+# assign deviation coding
+contr.sum(4)
+
+
+#assigning the deviation contrasts to race.f
+contrasts(hsb2$race.f) = contr.sum(4)
+#the regression
+summary(lm(read ~ race.f, hsb2))
+
+hsb2$race.f <- relevel(hsb2$race.f, ref = "Asian")
+
+
+# build and summarize your regression
+dev <- lm(read ~ race.f, data = hsb2)
+summary(dev)
+
+hsb2$race.f <- relevel(hsb2$race.f, ref = "Caucasian")
 ```
