@@ -1,7 +1,7 @@
 ---
 title: "Logistic Regression part 2"
 author: 
-  - "Student Name"
+  - "Grace Stewart"
   - "DS303, SP26"
   - "Prof. Amber Camp"
 date: 3/6/26
@@ -106,7 +106,7 @@ ggplot(colors, aes(x = hue, fill = response_label)) +
 
 # scatterplot: hue vs. response (raw)
 ggplot(colors, aes(x = hue, y = response, color = response_label)) +
-  geom_point(height = 0.05, alpha = 0.5) + # use jitter rather than point
+  geom_jitter(height = 0.05, alpha = 0.5) + # use jitter rather than point
   scale_color_manual(values = c("blue" = "steelblue", "green" = "seagreen")) +
   labs(title = "Hue vs. Response", x = "Hue", y = "Response (0 = blue, 1 = green)", color = "Response")
 ```
@@ -116,6 +116,12 @@ Apply a logistic regression to predict the outcome of `response` with all predic
 ```{r}
 m_bg <- glm(response_label ~ language + age + device + trial + hue, data = colors, family = binomial)
 summary(m_bg)
+
+contrasts(colors$response_label)
+levels(colors$response_label)
+
+colors$response_label <- relevel(colors$response_label, ref="green")
+contrasts(colors$response_label)
 ```
 
 What can you interpret from this model output?
@@ -265,7 +271,7 @@ Explore the data visually.
 
 ```{r}
 # point plot to see how Petal.Length and Species are related
-ggplot(iris, aes(x = Petal.Length, y = Species)) +
+ggplot(iris, aes(x = Petal.Length, y = Species, color = Species)) +
   geom_jitter()
 
 ```
@@ -326,19 +332,19 @@ Interpretation of `iris_model`: (Remember we coded `versicolor` = 0 and `virgini
 Edit the below to predict `Species` status based a predictor of your choice. You will need to subset your data (or just use `iris_subset` from above).
 
 ```{r}
-flower <- glm(Species_num ~ ?, data = iris_subset, family = binomial)
+flower <- glm(Species_num ~ Sepal.Length, data = iris_subset, family = binomial)
 summary(flower)
 ```
 
 Interpretation of Estimate coefficients:
 
--   **(Intercept)**: ??
+-   **(Intercept)**: -12.5708
 
-    -   This is the log-odds of \_\_\_\_\_.
+    -   This is the log-odds of being classified as \_\_\_\_ when \_\_\_\_ is zero.
 
--   **your predictor**: ??
+-   **Sepal Length**: 2.0129
 
-    -   This coefficient represents\_\_\_\_.
+    -   This coefficient represents \_\_\_\_.
 
 ## Try a new data set! `citrus`
 
@@ -358,19 +364,22 @@ citrus %>%
             mean_hue = mean(hue))
 
 # do some EDA :)
+ggplot(citrus, aes(x = diameter, y = fruit, color = fruit)) +
+  geom_jitter()
 
 
 # build a model
-fruit <- glm(fruit ~ ?, data = citrus, family = binomial)
+fruit <- glm(fruit ~ diameter, data = citrus, family = binomial)
 summary(fruit)
 ```
 
 Interpretation of Estimate coefficients:
 
--   **(Intercept)**: ??
+-   **(Intercept)**: 8.00473
 
-    -   This is the log-odds of \_\_\_\_\_.
+    -   This is the log-odds of being classified as "orange" when diameter is zero.
 
--   **your predictor**: ??
+-   **diameter**: -0.80099
 
-    -   This coefficient represents\_\_\_\_.
+    -   This coefficient represents that for each one-unit increase in diameter, the log-odds of a citrus fruit being classified as "orange" significantly decreases.
+    -   Since the coefficient is negative, the log-odds of being classified as "orange" increases compared to "grapefruit."
