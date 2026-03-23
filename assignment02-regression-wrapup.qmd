@@ -212,7 +212,7 @@ summary(question9)
 What are your key takeaways from this model?
 
 **Answer:**\
-The key takeaway is that all predictors are statistically significant, this results in all meaningfully affected the probability of the penguin being male. For example, for every 1 gram increase in body mass, the log odds of being male increase by 0.00296 and every 1 millimeter increase in bill length, the log odds of being male increase by 0.14589. On the other hand, with every 1 millimeter increase in flipper length, the log odds of being male *decrease* by 0.13486. This means that penguins that are heavier and have longer bills are more likely to be male, whereas penguins with longer flippers are more likely to be female.
+The key takeaway is that all predictors are statistically significant, this results in all meaningfully affecting the probability of the penguin being male. For example, for every 1 gram increase in body mass, the log odds of being male increase by 0.00296 and every 1 millimeter increase in bill length, the log odds of being male increase by 0.14589. On the other hand, with every 1 millimeter increase in flipper length, the log odds of being male *decrease* by 0.13486. This means that penguins that are heavier and have longer bills are more likely to be male, whereas penguins with longer flippers are more likely to be female.
 
 ## Question 10: Synthesize the information
 
@@ -227,10 +227,18 @@ Perform stepwise regression to find the best model for an outcome of your choice
 
 ```{r}
 
+#rm na values
+penguins_clean <- na.omit(penguins)
 
+#fitting full model
+bonus <- lm(flipper_length_mm ~ ., data = penguins_clean)
+
+#stepwise regression
+stepwise <- step(bonus, direction = "both")
+summary(stepwise)
 ```
 
 According to this stepwise regression, explain how the final model was selected.
 
 **Answer:**\
-(Write answer here)
+Stepwise regression selects the final model by removing predictors that do not meaningfully improve AIC (what measures how well a model fits the data). The only predictor that was removed was sex, meaning that it did not significantly improve the model's ability to predict flipper length.
