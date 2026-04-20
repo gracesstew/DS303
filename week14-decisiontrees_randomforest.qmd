@@ -261,7 +261,7 @@ A coefficient tells you *direction* and *magnitude* of an effect. Variable impor
 ## Summary: When to Use What
 
 | Situation | Reach for... |
-|------------------------------------|------------------------------------|
+|----|----|
 | You need to explain *why* X affects Y | Regression (linear, logistic, mixed) |
 | You need the best possible prediction | Random forest |
 | Your data has nonlinear relationships | Random forest |
