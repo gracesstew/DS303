@@ -94,6 +94,7 @@ Look at both model summaries. Which has the higher Adjusted R² on the training 
 -   The complex model has the higher adjusted R^2^ on the training set. Having a higher R^2^ does not necessarily mean that the model is better for predictions. This is because the adjusted R^2^ measures how well the model can explain variance in the *training* data. For predictions, you must see how the model performs on new, unseen data.
 
 -   **Multiple R²**: how much variance in `mpg` the model explains
+
 -   **Adjusted R²**: penalizes models for having more predictors and is a fairer comparison across models of different complexity
 
 A higher R² on training data looks good, but it can be misleading. A model can memorize the training data without actually learning anything that is generalizable. This is called ***overfitting***.
