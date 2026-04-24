@@ -1,0 +1,55 @@
+---
+title: "DS303 Final Project"
+author: 
+  - "Grace Stewart"
+  - "DS303, SP26"
+  - "Prof. Amber Camp"
+date: 4/24/26
+format: html
+toc: true
+editor: visual
+theme: spacelab
+---
+
+## Load packages
+
+```{r, message = FALSE}
+library(tidyverse)
+library(lme4)
+library(lmerTest)
+library(plotly)
+library(patchwork)
+```
+
+## Load data
+
+The date being used is from "The Complete Pokemon Dataset." The data was put together by user Rounak Banik and procured from Kaggle.
+
+```{r, message= FALSE}
+pkmn <- read.csv("data/pokemon.csv")
+
+summary(pkmn)
+```
+
+## Exploratory Data Analysis (EDA)
+
+```{r}
+
+#comparing atk and sp.atk
+ggplotly(ggplot(pkmn, aes(x=attack, y=sp_attack, color=type1)) +
+  geom_point(alpha = 0.5))
+
+#how many in each generation
+ggplotly(ggplot(pkmn, aes(x=generation, color=generation)) +
+  geom_bar())
+
+#comparing height and weight
+ggplotly(ggplot(pkmn, aes(x=height_m, y=weight_kg, color=generation)) +
+  geom_point(alpha = 0.5))
+```
+
+## Modeling
+
+```{r}
+
+```
