@@ -43,6 +43,7 @@ library(patchwork)
 library(rpart)
 library(rpart.plot)
 library(Metrics)
+library(corrplot)
 ```
 
 ## EDA {.scrollable}
@@ -135,7 +136,6 @@ rpart.plot(
   extra = 104, # show class probabilities and % of observations
   fallen.leaves = TRUE,
   main = "Decision Tree: Legendary Pokemon")
-
 ```
 
 ## Comparisons
@@ -163,3 +163,34 @@ Decision Tree
 -   Model strongly classifies majority as non-legendary first
 :::
 :::::
+
+## Comparisons cont... {.scrollable}
+
+```{r}
+vars <- pkmn[, c("attack", "defense", "speed", "hp", "sp_attack", "sp_defense", "capture_rate")]
+
+m <- cor(vars, use = "complete.obs")
+corrplot(m)
+```
+
+-   Negative correlations = capture rate
+
+-   Positive correlations = most everything else
+
+-   No concerns for multicollinearity
+
+## Comparisons cont...
+
+```{r, echo=TRUE, output=TRUE}
+
+# decision tree confusion matrix
+pred <- predict(tree_model, pkmn, type = "class")
+table(Predicted = pred, Actual = pkmn$is_legendary)
+
+```
+
+-   (723+63)/801= \~98% accuracy
+
+-   Correctly classified 63/70 legendaries
+
+-   Misclassified 15 pokemon

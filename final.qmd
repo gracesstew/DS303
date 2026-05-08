@@ -19,6 +19,9 @@ library(lme4)
 library(lmerTest)
 library(plotly)
 library(patchwork)
+library(rpart)
+library(rpart.plot)
+library(Metrics)
 ```
 
 ## Load data
@@ -40,7 +43,7 @@ ggplotly(ggplot(pkmn, aes(x=attack, y=sp_attack, color=type1)) +
   geom_point(alpha = 0.5))
 
 #how many in each generation
-ggplotly(ggplot(pkmn, aes(x=generation, color=generation)) +
+ggplotly(ggplot(pkmn, aes(x=legendary, color=legendary)) +
   geom_bar())
 
 #comparing height and weight
@@ -52,4 +55,115 @@ ggplotly(ggplot(pkmn, aes(x=height_m, y=weight_kg, color=generation)) +
 
 ```{r}
 
+pkmn$capture_rate <- as.numeric(as.character(pkmn$capture_rate)) #changing capture_rate to numeric var instead of categorical
+
+
+model <- glm(is_legendary ~ attack + defense + speed + hp + sp_attack + sp_defense + capture_rate,
+             data = pkmn,
+             family = binomial)
+
+summary(model)
 ```
+
+-   capture rate is strongest predictor
+
+    -   legendaries are harder to catch likely cause rarer
+
+-   spd and hp matter most compared to other stats
+
+    -   usually faster and bulkier in gameplay
+
+```{r}
+
+# calculating McFadden's R²
+1 - model$deviance / model$null.deviance # = 0.600
+```
+
+-   Pseudo R²: 0.6003 or \~60%
+    -   model can explain 60% of deviance, strong fit but could be overfitted
+
+```{r}
+
+tree_model <- rpart(
+  is_legendary ~ attack + defense + speed + hp + sp_attack + sp_defense + capture_rate, # predict Species from all other variables
+  data = pkmn,
+  method = "class") # using "class" for classification,
+
+summary(tree_model)
+```
+
+-   capture rate = main predictor
+
+    -   root split/very decisive
+
+    -   capture rate \< 20 = identified 90% of legendary pkm
+
+```{r}
+
+#| fig-width: 8
+#| fig-height: 5
+
+rpart.plot(
+  tree_model,
+  type = 4,
+  extra = 104, # show class probabilities and % of observations
+  fallen.leaves = TRUE,
+  main = "Decision Tree: Legendary Pokemon")
+```
+
+## Comparisons
+
+```{r}
+
+library(corrplot)
+
+vars <- pkmn[, c("attack", "defense", "speed", "hp", "sp_attack", "sp_defense", "capture_rate")]
+
+m <- cor(vars, use = "complete.obs")
+corrplot(m)
+corrplot(abs(m))
+```
+
+-   negative correlation for capture rate
+
+    -   lower capture rate for stronger pokemon (legendary)
+
+-   positive correlation for mostly everything else
+
+-   sp.atk/def slightly stronger
+
+-   no multicollinearity
+
+```{r}
+
+# decision tree confusion matrix
+pred <- predict(tree_model, pkmn, type = "class")
+table(Predicted = pred, Actual = pkmn$is_legendary)
+```
+
+-   (723+63)/801= \~98% accuracy
+
+-   63/70 legendaries
+
+-   misclassified 15 pkmn
+
+```{r}
+
+##test train split
+# split data
+set.seed(123)
+train_idx <- sample(1:nrow(pkmn), 0.8 * nrow(pkmn))
+train <- pkmn[train_idx, ]
+test  <- pkmn[-train_idx, ]
+
+tree_model <- rpart(is_legendary ~ attack + defense + speed + hp + sp_attack + sp_defense + capture_rate, data = train, method = "class")
+
+pred_test <- predict(tree_model, test, type = "class")
+confusionMatrix(pred_test, as.factor(test$is_legendary), positive = "1")
+```
+
+-   98% accuracy
+
+-   87% sensitivity
+
+-   99% specificity
