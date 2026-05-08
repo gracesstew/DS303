@@ -1,0 +1,165 @@
+---
+title: "Catching Legends"
+subtitle: "An ML analysis on identifying legendary Pokemon"
+author: "Grace Stewart"
+institute: "Chaminade University"
+date: 5/5/25
+format: 
+  revealjs:
+    theme: moon
+    transition: fade
+    transition-speed: fast
+editor: visual
+---
+
+## Background
+
+Pokemon is a beloved franchise featuring various creatures that players can collect and battle
+
+-   Each Pokemon has its own unique set of typings, statistics, and classifications
+
+-   Some are categorized as "legendary" Pokemon
+
+    -   Legendary Pokemon are considered far more rare and exclusive
+
+## Research Question
+
+What attribute can best predict a legendary Pokemon?
+
+-   This analysis will explore whether or not Pokemon classified as "legendary" can be predicted through various key factors and attributes.
+
+### Data
+
+The data being used is from "The Complete Pokemon Dataset." The data was put together by user Rounak Banik and procured from Kaggle. It includes 802 Pokemon from Generations 1-7 (also known as the first 7 mainline games).
+
+-   [https://www.kaggle.com/datasets/rounakbanik/pokemon](https://www.kaggle.com/datasets/rounakbanik/pokemon?utm_source=chatgpt.com)
+
+```{r, echo=FALSE, output=FALSE}
+library(tidyverse)
+library(lme4)
+library(lmerTest)
+library(plotly)
+library(patchwork)
+library(rpart)
+library(rpart.plot)
+library(Metrics)
+```
+
+## EDA {.scrollable}
+
+```{r}
+pkmn <- read.csv("data/pokemon.csv")
+
+#dataset is alr clean so no need to search for NAs
+
+pkmn$is_legendary <- factor(pkmn$is_legendary,
+                            levels = c(0, 1),
+                            labels = c("Not Legendary", "Legendary"))
+
+ggplotly(ggplot(pkmn, aes(x = factor(is_legendary), fill = factor(is_legendary))) +
+  geom_bar() +
+  labs(
+    title = "Number of legendary Pokemon",
+    x = "Classification",
+    y = "Count",
+    legend = list(title = list(text = "Legendary Status"))
+  ))
+```
+
+#### 
+
+```{r}
+
+ggplotly(ggplot(pkmn, aes(x = attack, y = defense, color = factor(is_legendary))) +
+  geom_point() +
+  labs(
+    title = "Attack vs Defense by Legendary Status",
+    color = "Legendary"
+  ))
+```
+
+## Logistic Regression Model
+
+```{r, echo=FALSE}
+
+pkmn$capture_rate <- as.numeric(as.character(pkmn$capture_rate)) #changing capture_rate to numeric var instead of categorical
+
+```
+
+```{r, echo=TRUE, output=TRUE}
+
+model <- glm(is_legendary ~ attack + defense + speed + hp + sp_attack + sp_defense + capture_rate,
+             data = pkmn,
+             family = binomial)
+
+summary(model)
+```
+
+## Logistic Regression Model cont...
+
+-   Strongest Predictor = Capture Rate
+-   Statistically Significant:
+    -   Speed & HP (p \< 0.001)
+    -   Defense (p = 0.002)
+    -   Special Attack (p = 0.003)
+
+```{r, echo=TRUE, output=TRUE}
+
+# calculating McFadden's R²
+1 - model$deviance / model$null.deviance # = 0.600
+```
+
+-   Pseudo R²: 0.6003 or \~60%
+
+## Decision Tree Model
+
+```{r, echo=TRUE, output=TRUE}
+
+tree_model <- rpart(
+  is_legendary ~ attack + defense + speed + hp + sp_attack + sp_defense + capture_rate, # predict Species from all other variables
+  data = pkmn,
+  method = "class") # using "class" for classification,
+
+summary(tree_model)
+```
+
+## Decision Tree cont...
+
+```{r}
+#| fig-width: 8
+#| fig-height: 5
+
+rpart.plot(
+  tree_model,
+  type = 4,
+  extra = 104, # show class probabilities and % of observations
+  fallen.leaves = TRUE,
+  main = "Decision Tree: Legendary Pokemon")
+
+```
+
+## Comparisons
+
+::::: columns
+::: {.column width="50%"}
+Logistic Regression
+
+-   Capture rate is strongest predictor
+
+-   Some stats (HP, Speed, Defense, Sp. Attack) are significant
+
+-   Strong overall fit (60% pseudo R²)
+
+    -   Potential overfitting
+:::
+
+::: {.column width="50%"}
+Decision Tree
+
+-   Capture rate is what cleanly splits the data the most
+
+    -   Pokemon with \<20 capture rate are highly likely to be legendary
+
+-   Model strongly classifies majority as non-legendary first
+:::
+:::::
